@@ -2,7 +2,8 @@ from flask import Flask, render_template, jsonify, request
 app = Flask(__name__)
 
 from pymongo import MongoClient
-client = MongoClient('localhost', 27017)
+# client = MongoClient('localhost', 27017)
+client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbsparta_plus_week1
 
 from datetime import datetime
@@ -22,21 +23,27 @@ def save_diary():
     content_receive = request.form['content_give']
 
     file = request.files["file_give"]
-    today= datetime.now()
-    mytime= today.strftime('%Y-%m-%d-%H-%M-%S')
 
-    filename=f'file-{mytime}' #파일의 이름이 그때 그때 바뀌어야 덮여 쓰이지 않음
+    extension = file.filename.split('.')[-1]
 
-    save_to = f'static/{filename}.jpg'
+    today = datetime.now()
+    mytime = today.strftime('%Y-%m-%d-%H-%M-%S')
+
+    filename = f'file-{mytime}'
+
+    save_to = f'static/{filename}.{extension}'
     file.save(save_to)
 
     doc = {
         'title':title_receive,
-        'content':content_receive
+        'content':content_receive,
+        'file': f'{filename}.{extension}',
+        'time': today.strftime('%Y.%m.%d')
     }
-    db.diary.insert_one(doc)
-    return jsonify({'msg': '저장완료!'})
 
+    db.diary.insert_one(doc)
+
+    return jsonify({'msg': '저장 완료!'})
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
