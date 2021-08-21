@@ -3,8 +3,8 @@ from pymongo import MongoClient
 from datetime import datetime
 
 app = Flask(__name__)
-client = MongoClient('localhost', 27017)
-# client = MongoClient('mongodb://test:test@localhost', 27017)
+#client = MongoClient('localhost', 27017)
+client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbsparta_plus_week1
 
 
