@@ -5,8 +5,8 @@ import requests
 
 app = Flask(__name__)
 
-client = MongoClient('3.36.120.98', 27017, username="test", password="test")
-db = client.dbsparta_plus_week2
+client = MongoClient('3.36.120.98', 27017, username="test", password="test") #initial sh2로 설정 
+db = client.dbsparta_plus_week2 #dbsparta_plus_week2로 DB생성
 
 
 @app.route('/')
@@ -18,6 +18,7 @@ def main():
 @app.route('/detail/<keyword>')
 def detail(keyword):
     # API에서 단어 뜻 찾아서 결과 보내기
+    
     return render_template("detail.html", word=keyword)
 
 
