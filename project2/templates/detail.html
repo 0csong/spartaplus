@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Sparta Vocabulary Notebook</title>
+    <meta property="og:title" content="Sparta Vocabulary Notebook"/>
+    <meta property="og:description" content="mini project for Web Plus"/>
+    <meta property="og:image" content="{{ url_for('static', filename='logo_red.png') }}"/>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
           crossorigin="anonymous">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-
+    <link href='{{ url_for("static", filename="mystyle.css") }}' rel="stylesheet">
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -21,25 +26,6 @@
             integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
     <style>
-        .wrap {
-            background-color: RGBA(232, 52, 78, 0.2);
-            min-height: 100vh;
-            padding-bottom: 50px;
-        }
-
-        .banner {
-            width: 100%;
-            height: 200px;
-
-            background-color: white;
-            background-image: url('{{ url_for("static", filename="logo_red.png") }}');
-
-            background-position: center;
-            background-size: contain;
-            background-repeat: no-repeat;
-
-            cursor: pointer;
-        }
 
         .container {
             width: 80%;
@@ -91,26 +77,24 @@
                 success: function (response) {
                     console.log(response)
                     $("#word").text(response["word"])
-                    if(response["pronunciation"]==null){
+                    if (response["pronunciation"] == null) {
                         $("#pronunciation").text("")
-                    }
-                    else{
+                    } else {
                         $("#pronunciation").text(`/${response["pronunciation"]}/`)
                     }
 
-                    let definitions= response["definitions"]
+                    let definitions = response["definitions"]
                     $("#definitions").empty()
-                    for(let i=0;i<definitions.length;i++){
-                        let definition=definitions[i]
-                        let html_temp=""
-                        if(definition["example"]==null){
-                             html_temp=`<div style="padding:10px">
+                    for (let i = 0; i < definitions.length; i++) {
+                        let definition = definitions[i]
+                        let html_temp = ""
+                        if (definition["example"] == null) {
+                            html_temp = `<div style="padding:10px">
                                             <i>${definition["type"]}</i>
                                             <br>${definition["definition"]}<br>
                                         </div>`
-                        }
-                        else{
-                            html_temp=`<div style="padding:10px">
+                        } else {
+                            html_temp = `<div style="padding:10px">
                                             <i>${definition["type"]}</i>
                                             <br>${definition["definition"]}<br>
                                             <span class="example">${definition["example"]}</span>
@@ -120,6 +104,35 @@
                     }
                 }
             })
+        }
+
+        function save_word() {
+            $.ajax({
+                type: "POST",
+                url: `/api/save_word`,
+                data: {
+                    word_give: "{{ word }}",
+                    definition_give: "{{ result.definitions[0].definition }}"
+                },
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.href = "/detail/{{ word }}?status_give=old"
+                }
+            });
+        }
+
+        function delete_word() {
+            $.ajax({
+                type: "POST",
+                url: `/api/delete_word`,
+                data: {
+                    word_give: "{{ word }}"
+                },
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.href = "/"
+                }
+            });
         }
     </script>
 
@@ -133,25 +146,29 @@
             <div>
                 <h1 id="word" style="display: inline;">{{ result.word }}</h1>
                 {% if result.pronunciation != None %}
-                <h5 id="pronunciation" style="display: inline;">/{{ result.pronunciation }}/</h5>
+                    <h5 id="pronunciation" style="display: inline;">/{{ result.pronunciation }}/</h5>
                 {% endif %}
             </div>
-            <button id="btn-save" class="btn btn-outline-sparta btn-lg"><i class="fa fa-floppy-o"
-                                                                           aria-hidden="true"></i>
-            </button>
-            <button id="btn-delete" class="btn btn-sparta btn-lg"><i class="fa fa-trash" aria-hidden="true"></i>
-            </button>
+            {% if status=="new" %} {# http://localhost:5000/detail/hi?status_give=new #}
+                <button id="btn-save" class="btn btn-outline-sparta btn-lg" onclick="save_word()">
+                    <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                </button>
+            {% else %}  {# http://localhost:5000/detail/hi?status_give=old #}
+                <button id="btn-delete" class="btn btn-sparta btn-lg" onclick="delete_word()">
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                </button>
+            {% endif %}
         </div>
         <hr>
         <div id="definitions">
             {% for definition in result.definitions %}
-            <div style="padding:10px">
-                <i>{{ definition.type }}</i>
-                <br>{{ definition.definition.encode('ascii','ignore').decode('utf-8') }}<br>
-                {% if definition.example %}
-                <span class="example">{{ definition.example.encode('ascii','ignore').decode('utf-8')|safe}}</span>
-                {% endif %}
-            </div>
+                <div style="padding:10px">
+                    <i>{{ definition.type }}</i>
+                    <br>{{ definition.definition.encode('ascii','ignore').decode('utf-8') }}<br>
+                    {% if definition.example %}
+                        <span class="example">{{ definition.example.encode('ascii','ignore').decode('utf-8')|safe }}</span>
+                    {% endif %}
+                </div>
             {% endfor %}
         </div>
     </div>
