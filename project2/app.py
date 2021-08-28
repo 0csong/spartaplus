@@ -22,6 +22,7 @@ def detail(keyword):
     status_receive=request.args.get("status_give")
     # API에서 단어 뜻 찾아서 결과 보내기
     r = requests.get(f"https://owlbot.info/api/v4/dictionary/{keyword}", headers={"Authorization": "Token fab3372dd6c05f5d404f0491bb9cefc79044663d"})
+    #owl bot에서 api코드 요청해서 받음
     if r.status_code !=200:
         return redirect(url_for("main",msg="단어가 이상"))
     result = r.json()
